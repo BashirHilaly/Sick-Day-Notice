@@ -42,11 +42,19 @@ personal = Email("Absence Notification for [Course Name]", "Dear Professor [Last
 
 if __name__ == '__main__':
 
+    daysAbsentInput = input("What days will you be absent?")
+    daysAbsent = []
+
+    for day in days:
+        if daysAbsentInput.find(day):
+            daysAbsent.append(day)
+
     Note = None
+    inputValid = False
 
     while inputValid == False:
-        customOrNot = input(prompt='Enter 1 for medical, 2 for personal emergency, 3 for custom')
-        if customOrNote == '1':
+        customOrNot = input('\nEnter 1 for medical, 2 for personal emergency, 3 for custom: ')
+        if customOrNot == '1':
             Note = medical
             inputValid = True
         elif customOrNot == '2':
@@ -54,21 +62,14 @@ if __name__ == '__main__':
             inputValid = True
         elif customOrNot == '3':
             # Create Note
-            subject = input(prompt="Type your Subject: ")
-            body = input(prompt=r'Type your body (use "\n" for new lines): ')
+            subject = input("Type your Subject: ")
+            body = input(r'Type your body (use "\n" for new lines): ')
             Note = Email(subject, body)
             inputValid = True
         else:
             print('\nInvalid Input')
             inputValid = False
 
-
-    daysAbsentInput = input(prompt="What days will you be absent?")
-    daysAbsent = []
-
-    for day in days:
-        if daysAbsentInput.find(day):
-            daysAbsent.append(day)
 
 
     print("LOGGING YOU IN!\nBE READY TO SHARE YOUR VERIFICATION CODE")
@@ -88,24 +89,24 @@ if __name__ == '__main__':
     WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.NAME, "passwd"))
     )
-
+    time.sleep(3)
     # Input password
     passwordForm = driver.find_element(By.NAME, "passwd")
     passwordForm.clear()
     passwordForm.send_keys(myPassword + Keys.ENTER)
 
     # Verify identity with using text msg
-    WebDriverWait(driver, 5).until(
+    WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div[2]/div/div[2]/div/div[1]/div/div/div[2]/div"))
     )
 
     # Input password
     text = driver.find_element(By.XPATH, "/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div[2]/div/div[2]/div/div[1]/div/div/div[2]/div")
-    passwordForm.click()
+    text.click()
 
     time.sleep(5)
 
-    verificationCode = input(prompt="Input Verification Code: ")
+    verificationCode = input("Input Verification Code: ")
 
     # Verify identity with using text msg
     WebDriverWait(driver, 5).until(
@@ -115,13 +116,68 @@ if __name__ == '__main__':
     # Input password
     code = driver.find_element(By.NAME, "otc")
     code.clear()
-    passwordForm.send_keys(verificationCode + Keys.ENTER)
+    code.send_keys(verificationCode + Keys.ENTER)
 
     # Go to inbox
     driver.get("""https://psu.instructure.com/conversations#filter=type=inbox""")
 
     # Now loop through classes for the day
+    # Check what days you are absent
+    classesYouWillMiss = []
+    for _class in classes:
+        for day in daysAbsent:
+            if day in _class.getDays():
+                classesYouWillMiss.append(_class)
+    
+    # TESTING IN PRODUCTION WE WILL LOOP THROUGH CLASSES AND RUN THIS
+    testClass = classesYouWillMiss[0]
+    # Click compose
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div[1]/div/div[2]/div/span[1]/div/div/span/span[4]/span/span[1]/span/span/button"))
+    )
+    compose = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div[1]/div/div[2]/div/span[1]/div/div/span/span[4]/span/span[1]/span/span/button")
+    compose.click()
+    # Select course
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "Select_2"))
+    )
+    course = driver.find_element(By.ID, "Select_2")
+    course.clear()
+    course.send_keys(testClass.getCourseName() + Keys.ENTER)
+    # Select teacher
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "/html/body/span[27]/span/span/div[2]/span/span[1]/span[3]/span/span[2]/div/div/span/span[2]/button"))
+    )
+    address = driver.find_element(By.XPATH, "/html/body/span[27]/span/span/div[2]/span/span[1]/span[3]/span/span[2]/div/div/span/span[2]/button")
+    address.click()
 
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[1]"))
+    )
+    teachers = driver.find_element(By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[1]")
+    teachers.click()
+
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[2]"))
+    )
+    teacher = driver.find_element(By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[2]")
+    teacher.click()
+
+    # Write the subject
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "TextInput_5"))
+    )
+    subject = driver.find_element(By.ID, "TextInput_5")
+    subject.clear()
+    subject.send_keys(Note.subject)
+
+    # Write the body
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "TextArea_0"))
+    )
+    body = driver.find_element(By.ID, "TextArea_0")
+    body.clear()
+    body.send_keys(Note.body)
 
 
 
