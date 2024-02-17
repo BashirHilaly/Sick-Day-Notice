@@ -13,6 +13,11 @@ class Class():
 
     def getCourseName(self):
         return self.courseName
+    
+    def getCourse(self):
+        splittedCourseName = self.courseName.split(' ')
+        name = splittedCourseName[0] + ' ' + splittedCourseName[1]
+        return name
 
     def getDays(self):
         return self.days

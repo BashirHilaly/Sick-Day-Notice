@@ -28,7 +28,7 @@ CAS100 = Class('Testa', 'CAS 100A, Section 003: Effective Speech (22411--AB---P-
 CMPSC132 = Class('Ganther', 'CMPSC 132, Section 003: PROG & COMP II (22411--AB---P-CMPSC---132-------003-)', ['monday', 'wednesday', 'friday'])
 MATH141 = Class('Shwe', 'MATH 141, Section 009: CALC ANLY GEOM II (22411--AB---P-MATH----141-------009-)', ['monday', 'wednesday', 'friday'])
 PHYS211 = Class('Pearson', 'PHYS 211, Section 006: Mechanics (22411--AB---P-PHYS----211-------006-)', ['tuesday', 'thursday'])
-GAME251 = Class('KHALIQ', 'MATH 141, Section 009: CALC ANLY GEOM II (22411--AB---P-MATH----141-------009-)', ['tuesday', 'thursday'])
+GAME251 = Class('KHALIQ', 'GAME 251, Section 001: 2D Web Game Dev (22411--AB---P-GAME----251-------001-)', ['tuesday', 'thursday'])
 
 classes = [ CAS100, CMPSC132, MATH141, PHYS211, GAME251]
 days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     daysAbsent = []
 
     for day in days:
-        if daysAbsentInput.find(day):
+        if not daysAbsentInput.find(day):
             daysAbsent.append(day)
 
     Note = None
@@ -69,6 +69,18 @@ if __name__ == '__main__':
         else:
             print('\nInvalid Input')
             inputValid = False
+    
+    # Now loop through classes for the day
+    # Check what days you are absent
+    classesYouWillMiss = []
+    for _class in classes:
+        for day in daysAbsent:
+            if day in _class.getDays():
+                classesYouWillMiss.append(_class)
+
+    print("\n\nClasses: ")
+    for i in classesYouWillMiss:
+        print(i.getCourse())
 
 
 
@@ -118,66 +130,66 @@ if __name__ == '__main__':
     code.clear()
     code.send_keys(verificationCode + Keys.ENTER)
 
-    # Go to inbox
-    driver.get("""https://psu.instructure.com/conversations#filter=type=inbox""")
+    time.sleep(2)
 
-    # Now loop through classes for the day
-    # Check what days you are absent
-    classesYouWillMiss = []
-    for _class in classes:
-        for day in daysAbsent:
-            if day in _class.getDays():
-                classesYouWillMiss.append(_class)
     
     # TESTING IN PRODUCTION WE WILL LOOP THROUGH CLASSES AND RUN THIS
-    testClass = classesYouWillMiss[0]
-    # Click compose
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div[1]/div/div[2]/div/span[1]/div/div/span/span[4]/span/span[1]/span/span/button"))
-    )
-    compose = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div[1]/div/div[2]/div/span[1]/div/div/span/span[4]/span/span[1]/span/span/button")
-    compose.click()
-    # Select course
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "Select_2"))
-    )
-    course = driver.find_element(By.ID, "Select_2")
-    course.clear()
-    course.send_keys(testClass.getCourseName() + Keys.ENTER)
-    # Select teacher
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/span[27]/span/span/div[2]/span/span[1]/span[3]/span/span[2]/div/div/span/span[2]/button"))
-    )
-    address = driver.find_element(By.XPATH, "/html/body/span[27]/span/span/div[2]/span/span[1]/span[3]/span/span[2]/div/div/span/span[2]/button")
-    address.click()
+    for _class in classesYouWillMiss:
+        driver.get("""https://psu.instructure.com/""")
+        # Go to inbox
+        driver.get("""https://psu.instructure.com/conversations#filter=type=inbox""")
+        # Click compose
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div[1]/div/div[2]/div/span[1]/div/div/span/span[4]/span/span[1]/span/span/button"))
+        )
+        compose = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div[1]/div/div[2]/div/span[1]/div/div/span/span[4]/span/span[1]/span/span/button")
+        compose.click()
+        # Select course
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "Select_2"))
+        )
+        course = driver.find_element(By.ID, "Select_2")
+        course.clear()
+        course.send_keys(_class.getCourseName() + Keys.ENTER)
+        # Select teacher
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "TextInput_4"))
+        )
+        teacher = driver.find_element(By.ID, "TextInput_4")
+        teacher.click()
+        time.sleep(1)
+        teacher.send_keys(Keys.ENTER)
+        time.sleep(2)
+        teacher.send_keys(Keys.ARROW_DOWN)
+        time.sleep(1)
+        teacher.send_keys(Keys.ENTER)
 
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[1]"))
-    )
-    teachers = driver.find_element(By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[1]")
-    teachers.click()
+        # Editing the template
 
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[2]"))
-    )
-    teacher = driver.find_element(By.XPATH, "/html/body/span[30]/span/span/span[2]/div/ul/span[2]")
-    teacher.click()
+        # Days absent string
+        date = ''
+        if len(daysAbsent) > 1:
+            for day in daysAbsent:
+                date += day
+        else:
+            date = daysAbsent[0]
 
-    # Write the subject
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "TextInput_5"))
-    )
-    subject = driver.find_element(By.ID, "TextInput_5")
-    subject.clear()
-    subject.send_keys(Note.subject)
+        # Write the subject
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "TextInput_5"))
+        )
+        subject = driver.find_element(By.ID, "TextInput_5")
+        subject.clear()
+        subject.send_keys(Note.subject.replace('[Course Name]', _class.getCourse()).replace('[Date]', date))
 
-    # Write the body
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "TextArea_0"))
-    )
-    body = driver.find_element(By.ID, "TextArea_0")
-    body.clear()
-    body.send_keys(Note.body)
+        # Write the body    
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "TextArea_0"))
+        )
+        body = driver.find_element(By.ID, "TextArea_0")
+        body.clear()
+        print("Writing: " + Note.body)
+        body.send_keys(Note.body.replace('[Name]', myName).replace('[Course Name]', _class.getCourse()).replace('[Date]', date).replace('[Your Full Name]', myName))
 
 
 
